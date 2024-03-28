@@ -58,6 +58,8 @@ public class TrailingStop
 public class Order
 {
     public string AccountID { get; set; }
+    public DateTime? ClosedDateTime{get;set;}
+    public DateTime? OpenedDateTime{get;set;}
     public string AdvancedOptions { get; set; }
     public string Alias { get; set; }
     public string AssetType { get; set; }

@@ -28,8 +28,6 @@ public class TradeStationService
         var response = await _httpClient.GetFromJsonAsync<TradeStationOrderResponse>(
         $"brokerage/accounts/{account}/historicalorders?since{since.ToString("MM-DD-YYY")}");
 
-        return response?.Orders ?? Enumerable.Empty<Order>();
-
-            
+        return response.Orders;
     }
 }

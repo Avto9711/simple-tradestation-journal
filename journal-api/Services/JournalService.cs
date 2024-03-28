@@ -26,9 +26,13 @@ public class JournalService : IJournalService
         return new JournalBalance(DateOnly.FromDateTime(DateTime.Now), optionOrdersBalance, 0);
     }
 
-    public Task<IEnumerable<JournalBalance>> CalculateHistoricalBalance(string account, DateOnly since)
+    public async Task<IEnumerable<JournalBalance>> CalculateHistoricalBalance(string account, DateOnly since)
     {
-        throw new NotImplementedException();
+        var orders = await _tradeStationService.GetHistoricOrders(account, since);
+
+        var orderByDate = orders.Where(y=> y.ClosedDateTime is not null).GroupBy(y=>DateOnly.FromDateTime(y.ClosedDateTime.Value));
+        var historicalJournal = orderByDate.Select(y=> new JournalBalance(y.Key, CalculateOptionsOrdersBalance(y)));
+        return historicalJournal;
     }
 
     private double CalculateOptionsOrdersBalance(IEnumerable<Order> orders)
