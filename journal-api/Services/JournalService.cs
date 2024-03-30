@@ -6,7 +6,7 @@ public interface IJournalService
 {
     Task<JournalBalance> CalculateTodayBalance(string account);
 
-    Task<IEnumerable<JournalBalance>> CalculateHistoricalBalance(string account, DateOnly since);
+    Task<IEnumerable<JournalBalance>> CalculateHistoricalBalance(string account, DateOnly? since);
 }
 
 public class JournalService : IJournalService
@@ -21,29 +21,40 @@ public class JournalService : IJournalService
     public async Task<JournalBalance> CalculateTodayBalance(string account)
     {
         var orders = await _tradeStationService.GetTodayOrders(account);
-        var optionOrdersBalance = CalculateOptionsOrdersBalance(orders);
-
-        return new JournalBalance(DateOnly.FromDateTime(DateTime.Now), optionOrdersBalance, 0);
+        var orderDate = DateOnly.FromDateTime(DateTime.Now);
+        return new JournalBalance(orderDate, CalculateOrdersAssetTypeBalance(orders, "STOCKOPTION",orderDate), 
+                                                                       CalculateOrdersAssetTypeBalance(orders,"STOCK", orderDate));
     }
 
-    public async Task<IEnumerable<JournalBalance>> CalculateHistoricalBalance(string account, DateOnly since)
+    public async Task<IEnumerable<JournalBalance>> CalculateHistoricalBalance(string account, DateOnly? since = null)
     {
-        var orders = await _tradeStationService.GetHistoricOrders(account, since);
+        var ordersSince = since ?? GetThreeMonthsAgoDate();
+        var orders = await _tradeStationService.GetHistoricOrders(account, ordersSince);
 
         var orderByDate = orders.Where(y=> y.ClosedDateTime is not null).GroupBy(y=>DateOnly.FromDateTime(y.ClosedDateTime.Value));
-        var historicalJournal = orderByDate.Select(y=> new JournalBalance(y.Key, CalculateOptionsOrdersBalance(y)));
+        var historicalJournal = orderByDate.Select(y=> new JournalBalance(y.Key, CalculateOrdersAssetTypeBalance(y, "STOCKOPTION", y.Key), 
+                                                                                 CalculateOrdersAssetTypeBalance(y,"STOCK", y.Key)));
         return historicalJournal;
     }
 
-    private double CalculateOptionsOrdersBalance(IEnumerable<Order> orders)
+    private BalanceData CalculateOrdersAssetTypeBalance(IEnumerable<Order> orders, string assetType, DateOnly ordersDate)
     {
-        var optionOrders = orders.Where(o => o.Legs.Any(l => l.OptionType is not null));
-        var filledOrders = optionOrders.Where(y=> y.Status == "FLL");
+        var isOptions = assetType == "STOCKOPTION";
+        var dateOrders = orders.Where(o => o.Legs.Any(l => l.AssetType == assetType) && DateOnly.FromDateTime(o.ClosedDateTime.Value) == ordersDate);
+        var filledOrders = dateOrders.Where(y=> y.Status == "FLL");
 
-        var boughtOrdersTotal = filledOrders.Where(x => x.Legs.Any(y=>y.BuyOrSell == "Buy")).Sum(x => x.FilledPrice);
-        var soldOrdersTotal = filledOrders.Where(x => x.Legs.Any(y=>y.BuyOrSell == "Sell")).Sum(x => x.FilledPrice);
-        var commissions = optionOrders.Sum(y=>y.CommissionFee);
-        return ((soldOrdersTotal - boughtOrdersTotal) * 100) - commissions ;
+        var boughtOrdersTotal = filledOrders.Where(x => x.Legs.Any(y=>y.BuyOrSell == "Buy")).Sum(x => x.FilledPrice) * (isOptions ? 100:1);
+        var soldOrdersTotal = filledOrders.Where(x => x.Legs.Any(y=>y.BuyOrSell == "Sell")).Sum(x => x.FilledPrice) * (isOptions ? 100:1);
+        var commissions = dateOrders.Sum(y=>y.CommissionFee);
+        var balance = ((soldOrdersTotal - boughtOrdersTotal) - commissions);
+        
+        return new BalanceData(
+                        balance:balance, 
+                        sellAmount: soldOrdersTotal, 
+                        buyAmount: boughtOrdersTotal,
+                        commissions:commissions);
     }
+
+    private DateOnly GetThreeMonthsAgoDate()=> DateOnly.FromDateTime(DateTime.Now.AddMonths(-3).AddDays(2));
 }
 

@@ -1,5 +1,6 @@
 using journal.api.Domain;
 using journal.api.Dto;
+using Microsoft.Identity.Client;
 
 namespace journal.api.service;
 
@@ -14,20 +15,29 @@ public class TradeStationService
         _httpClient.BaseAddress = new Uri("https://api.tradestation.com/v3/");
     }
 
-    public async Task<IEnumerable<Order>> GetTodayOrders(string account) 
+    public async Task<IEnumerable<Order>> GetTodayOrders(string account) => 
+        await LoadAllOrders($"brokerage/accounts/{account}/orders?"); 
+
+    public async Task<IEnumerable<Order>> GetHistoricOrders(string account, DateOnly since) => 
+        await LoadAllOrders($"brokerage/accounts/{account}/historicalorders?since={since.ToString("MM-dd-yyyy")}&");
+    
+
+    //TODO: This logic can be taken outside to another service
+    private async Task<IEnumerable<Order>> LoadAllOrders(string endpoint)
     {
-        var response = await _httpClient.GetFromJsonAsync<TradeStationOrderResponse>(
-        $"brokerage/accounts/{account}/orders");
+        var pageSize = 250;
+        var orders = new List<Order>();
+        string nextToken = null;
 
-        return response.Orders;
-            
-    }
+        var endpointWithPage = $"{endpoint}pageSize={pageSize}";
 
-    public async Task<IEnumerable<Order>> GetHistoricOrders(string account, DateOnly since) 
-    {
-        var response = await _httpClient.GetFromJsonAsync<TradeStationOrderResponse>(
-        $"brokerage/accounts/{account}/historicalorders?since{since.ToString("MM-DD-YYY")}");
+        do{
+            var endpointWithPageAndToken = string.IsNullOrEmpty(nextToken) ? endpointWithPage : endpointWithPage + $"&nextToken={nextToken}";
+            var response = await _httpClient.GetFromJsonAsync<TradeStationOrderResponse>(endpointWithPageAndToken);
+            orders.AddRange(response.Orders);
+            nextToken = response.NextToken;
+        }while(nextToken is not null);
 
-        return response.Orders;
+        return orders;
     }
 }

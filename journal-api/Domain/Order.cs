@@ -19,6 +19,7 @@ public class Leg
     public string OpenOrClose { get; set; }
     public int OrderID { get; set; }
     public string BuyOrSell { get; set; }
+    public string AssetType { get; set; }
     public string OrderType { get; set; }
     public double PointValue { get; set; }
     public double PriceUsedForBuyingPower { get; set; }
