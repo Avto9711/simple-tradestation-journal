@@ -1,3 +1,5 @@
 journal-api/bin/
 journal-api/obj/
 journal-ui/node_modules/
+journal-ui/.env.local
+journal-api/appSettings.Local.json

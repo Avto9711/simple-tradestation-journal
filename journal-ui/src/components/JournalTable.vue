@@ -91,20 +91,6 @@ const sampleData2 = (offst, limit) => {
 </script>
 
 <template>
-	<div class="container-md">
-		<div class="row p-2">
-			<div class="col-10">
-				<h3>Weekly | Monthly <small class="text-body-secondary">Journal</small> </h3>
-			</div>
-			<div class="col-2 mt-2">
-				<div class="form-check form-switch">
-					<input class="form-check-input" type="checkbox" role="switch" id="flexSwitchCheckChecked" checked>
-					<label class="form-check-label" for="flexSwitchCheckChecked">Monthly</label>
-				</div>
-			</div>
-		</div>
-		<div class="row">
-			<div class="col">
 				<VueTableLite
 					class="table table-bordered border-primary"
 					:is-loading="table.isLoading"
@@ -116,12 +102,6 @@ const sampleData2 = (offst, limit) => {
 					@do-search="doSearch"
 					@is-finished="table.isLoading = false"
 					></VueTableLite>
-			</div>
-		</div>
-
-
-	</div>
-
 </template>
 <style scoped>
 

@@ -7,4 +7,8 @@ public class JournalBalance(DateOnly balanceDay, BalanceData optionsEndingBalanc
     public BalanceData OptionsEndingBalance { get; init; } = optionsEndingBalance;
 
     public BalanceData StocksEndingBalance { get; init; } = stocksEndingBalance;
+
+    public double OverallBalance => this.OptionsEndingBalance.Balance + this.StocksEndingBalance.Balance;
+
+    public double OverallNumberOfTrades => this.OptionsEndingBalance.NumberOfTrades + this.StocksEndingBalance.NumberOfTrades;
 }

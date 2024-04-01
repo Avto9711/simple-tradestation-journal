@@ -3,7 +3,7 @@ using journal.api.service;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
-namespace journal.api.controllers;
+namespace journal.api.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]

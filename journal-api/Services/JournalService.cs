@@ -23,7 +23,7 @@ public class JournalService : IJournalService
         var orders = await _tradeStationService.GetTodayOrders(account);
         var orderDate = DateOnly.FromDateTime(DateTime.Now);
         return new JournalBalance(orderDate, CalculateOrdersAssetTypeBalance(orders, "STOCKOPTION",orderDate), 
-                                                                       CalculateOrdersAssetTypeBalance(orders,"STOCK", orderDate));
+                                             CalculateOrdersAssetTypeBalance(orders,"STOCK", orderDate));
     }
 
     public async Task<IEnumerable<JournalBalance>> CalculateHistoricalBalance(string account, DateOnly? since = null)
@@ -52,7 +52,8 @@ public class JournalService : IJournalService
                         balance:balance, 
                         sellAmount: soldOrdersTotal, 
                         buyAmount: boughtOrdersTotal,
-                        commissions:commissions);
+                        commissions:commissions,
+                        numberOfTrades: (filledOrders.Count() / 2));
     }
 
     private DateOnly GetThreeMonthsAgoDate()=> DateOnly.FromDateTime(DateTime.Now.AddMonths(-3).AddDays(2));

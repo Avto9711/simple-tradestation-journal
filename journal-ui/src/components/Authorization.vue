@@ -1,17 +1,24 @@
 <script setup lang="ts">
 import { useRoute } from 'vue-router'
 import useUserStore from '@/stores/user'
+import config from '@/config'
 const route = useRoute()
-if(route.query['code']){
 
-  alert(route.query['code'])  
+const store = useUserStore();
+
+const clientId = config.TsClientId;
+
+const code = route.query['code'];
+if(code){
+  store.getAccessToken(code as string);
 }
-const store  = useUserStore();
-
+const login = ()=>{
+  window.location.href = `https://signin.tradestation.com/authorize?response_type=code&client_id=${clientId}&redirect_uri=http://localhost:8080&audience=https://api.tradestation.com&state=STATE&scope=openid offline_access profile MarketData`;
+}
 </script>
 
 <template>
-  <a class="btn btn-outline-light me-2" type="button" href="https://signin.tradestation.com/authorize?response_type=code&client_id={{clientid}}&redirect_uri=http://localhost:8080&audience=https://api.tradestation.com&state=STATE&scope=openid offline_access profile MarketData">Log in TradeStation</a>
+  <button @click="login()" class="btn btn-outline-light me-2" type="button" href="">Log in TradeStation</button>
 </template>
 
 <style scoped>
