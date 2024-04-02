@@ -1,24 +1,48 @@
 using journal.api.Dto;
 using journal.api.service;
+using journal.Settings;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
 
 namespace journal.api.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
-public class AuthenticationController(IJournalService journalService) : ControllerBase
+public class AuthenticationController(IHttpClientFactory httpClientFactory, IOptions<TradeStationConfig> tradeStationConfig) : ControllerBase
 {
-    private readonly IJournalService _journalService = journalService;
+    private readonly IHttpClientFactory _httpClientFactory = httpClientFactory;
+    private readonly IOptions<TradeStationConfig> _tradeStationConfig = tradeStationConfig;
 
-    [HttpGet("Token")]
+    [HttpPost("Token")]
     public async Task<IActionResult> Token([FromBody] AccessTokenRequest accessTokenRequest)
     {
-        // call https://signin.tradestation.com/oauth/token with the token from the UI and return the bearer token
+        var httpClient = _httpClientFactory.CreateClient();
+        var dict = new Dictionary<string, string>
+        {
+            { "grant_type", "authorization_code" },
+            { "client_id", _tradeStationConfig.Value.ClientId },
+            { "client_secret", _tradeStationConfig.Value.SecretKey },
+            { "code", accessTokenRequest.Code },
+            { "redirect_uri", accessTokenRequest.RedirectUrl },
+        };
 
-        return Ok();
+        var httpRequestMessage = new HttpRequestMessage(
+            HttpMethod.Post,
+            _tradeStationConfig.Value.IdentityServerUrl)
+        {
+            Content = new FormUrlEncodedContent(dict)
+        };
+
+        var httpResponseMessage = await httpClient.SendAsync(httpRequestMessage);
+
+        httpResponseMessage.EnsureSuccessStatusCode();
+
+        var response =  await httpResponseMessage.Content.ReadFromJsonAsync<AccessTokenResponse>();
+
+        return Ok(response);
     }
 
-    [HttpGet("Refresh")]
+    [HttpPost("Refresh")]
     public async Task<IActionResult> Refresh([FromBody] AccessTokenRequest accessTokenRequest)
     {
         return Ok();

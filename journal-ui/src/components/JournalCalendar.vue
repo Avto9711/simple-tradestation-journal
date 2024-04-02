@@ -30,7 +30,7 @@ const calendarOptions:CalendarOptions =  reactive({
         },
         events:(info, successCallback, failureCallBack)=>{
 
-          const tradeBalance = {balanceDate:'2024-03-01', optionsEndingBalance: {balance:100, numberOfTrades: 1}, stocksEndingBalance:{balance:100, numberOfTrades: 1}, overallBalance:200, overallNumberOfTrades:2 };
+          const tradeBalance = {comments:"", balanceDate:'2024-03-01', optionsEndingBalance: {balance:100, numberOfTrades: 1}, stocksEndingBalance:{balance:100, numberOfTrades: 1}, overallBalance:200, overallNumberOfTrades:2 };
           const textColor = tradeBalance.overallBalance > 0 ? 'green': 'red'
           const events:EventInput[] = [
             { 
@@ -84,12 +84,13 @@ const calendarOptions:CalendarOptions =  reactive({
               <td>${{selectedJournalBalance.stocksEndingBalance.numberOfTrades}}</td>
             </tr>
             <tr>
-              <th scope="row">Sold</th>
+              <th scope="row">So  ld</th>
               <td>${{selectedJournalBalance.optionsEndingBalance.numberOfTrades}}</td>
               <td>${{selectedJournalBalance.stocksEndingBalance.numberOfTrades}}</td>
             </tr>
           </tbody>
         </table>
+        <textarea v-model="selectedJournalBalance.comments" cols="30" rows="10"></textarea>
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>

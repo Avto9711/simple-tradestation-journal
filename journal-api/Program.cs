@@ -1,7 +1,12 @@
 using journal.api.service;
+using journal.Settings;
 using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder
+.Configuration
+.AddJsonFile("appsettings.Local.Json",true);
 
 // Add services to the container.
 
@@ -38,7 +43,9 @@ builder.Services.AddSwaggerGen(option =>
     });
 });
 
-builder.Services.AddHttpClient("Bin");
+
+builder.Services.Configure<TradeStationConfig>(
+    builder.Configuration.GetSection(TradeStationConfig.Key));
 
 builder.Services.AddHttpClient<TradeStationService>()
 .AddHeaderPropagation();
