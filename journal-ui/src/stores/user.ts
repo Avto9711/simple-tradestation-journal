@@ -1,15 +1,17 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
-
+import apiService from '@/apiService';
 
 export const useUserStore = defineStore('user',{
   state:()=>({
-    userEmail:ref("")
+    userEmail:"",
+    bearerToken:null
   }),
+  persist:true,
   actions:{
-    async getAccessToken(code:string ):Promise<string>{
-        //call api auth endpoint
-        return "access-token"
+    async setAccessToken(code:string, redirectUrl:string){
+        const response = await apiService.getUserAccessToken(code, redirectUrl);
+        this.bearerToken = response.access_token;
     }
   }
 

@@ -1,6 +1,7 @@
 // Import our custom CSS
 import * as bootstrap from 'bootstrap'
 import './scss/styles.scss'
+import piniaPluginPersistedstate from 'pinia-plugin-persistedstate'
 
 // Import all of Bootstrap's JS
 
@@ -12,7 +13,10 @@ import router from './router'
 
 const app = createApp(App)
 
-app.use(createPinia())
+const pinia = createPinia();
+pinia.use(piniaPluginPersistedstate)
+
+app.use(pinia)
 app.use(router)
 
 app.mount('#app')

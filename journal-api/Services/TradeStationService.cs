@@ -21,6 +21,9 @@ public class TradeStationService
     public async Task<IEnumerable<Order>> GetHistoricOrders(string account, DateOnly since) => 
         await LoadAllOrders($"brokerage/accounts/{account}/historicalorders?since={since.ToString("MM-dd-yyyy")}&");
     
+    public async Task<IEnumerable<Account>> GetAccounts() => 
+        (await _httpClient.GetFromJsonAsync<GetAccountsResponse>("brokerage/accounts")).Accounts;
+    
 
     //TODO: This logic can be taken outside to another service
     private async Task<IEnumerable<Order>> LoadAllOrders(string endpoint)
