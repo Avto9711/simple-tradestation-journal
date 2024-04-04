@@ -2,7 +2,23 @@ using journal.api.service;
 using journal.Settings;
 using Microsoft.OpenApi.Models;
 
+
+var  MyAllowSpecificOrigins = "_myAllowSpecificOrigins";
+
 var builder = WebApplication.CreateBuilder(args);
+
+
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy(name: MyAllowSpecificOrigins,
+                      policy  =>
+                      {
+                          policy.WithOrigins("http://localhost:8080");
+                          policy.AllowAnyHeader();
+                          policy.AllowAnyMethod();
+                          policy.AllowCredentials();
+                      });
+});
 
 builder
 .Configuration
@@ -65,6 +81,8 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+app.UseCors(MyAllowSpecificOrigins);
 
 app.UseAuthorization();
 

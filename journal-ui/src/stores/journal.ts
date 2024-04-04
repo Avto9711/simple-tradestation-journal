@@ -1,10 +1,14 @@
 import { defineStore } from "pinia";
 import { ref } from "vue"
+import apiService from '@/apiService';
 
- const useJournalStore = defineStore('journal', ()=>{
-  const userJournals = ref([]);
+ const useJournalStore = defineStore('journal',{
+  state:()=> ({
+    journalBalances:[],
+    }),
+    actions:{
 
-	return {userJournals};
-})
+    }
+ })
 
 export default useJournalStore;

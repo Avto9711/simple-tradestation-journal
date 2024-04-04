@@ -1,19 +1,48 @@
 import config from "./config";
-
+import useUserStore from '@/stores/user'
 class ApiService
 {
     public async getUserAccessToken(code:string, redirectUrl:string): Promise<Record<string, any>>{
-        return await this.postRequest(`${config.apiUrl}api/Authentication/Token`, {code, redirectUrl})
+        const response = await this.postRequest(`${config.apiUrl}api/Authentication/Token`, {code, redirectUrl});
+        return await response.json()
+    }
+
+    public async getUserAccounts(): Promise<Record<string, any>[]>{
+        const response = await this.getRequest(`${config.apiUrl}api/Accounts`);
+        return await response.json()
     }
 
     private async getRequest(url:string):Promise<any>
     {
-     return await fetch(url,{method:'GET'})
+        const options:RequestInit  = {method:'GET', 
+        headers: {
+        "Content-Type": "application/json",
+        ...this.getAuthorizationHeader()
+        },
+        credentials: 'include',
+    };
+
+     return await fetch(url,options);
     }
 
-    private async postRequest(url:string, body:Record<string, any>):Promise<any>
+    private async postRequest(url:string, body:Record<string, any>):Promise<Response>
     {
-     return await fetch(url,{method:'POST', body: JSON.stringify(body)})
+    const options:RequestInit = {
+        method:'POST', 
+        body: JSON.stringify(body), 
+        headers: {
+        "Content-Type": "application/json",
+        ...this.getAuthorizationHeader()
+        }
+    }
+     return await fetch(url,options)
+    }
+
+    private getAuthorizationHeader(): Record<string, any>{
+     const userStore = useUserStore()
+     const token = userStore.bearerToken;
+
+     return token === null ? {} : {'Authorization': `Bearer ${token}`};
     }
 }
 

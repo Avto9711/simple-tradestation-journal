@@ -2,6 +2,7 @@
 import { RouterLink, RouterView } from 'vue-router'
 import HelloWorld from './components/HelloWorld.vue'
 import Authorization from './components/Authorization.vue'
+import AccountSelector from './components/AccountSelector.vue'
 
 </script>
 
@@ -30,7 +31,9 @@ import Authorization from './components/Authorization.vue'
           <li><RouterLink class="nav-link px-2 text-white" to="/about">About</RouterLink></li>
         </ul>
         <div class="text-end">
-          <Authorization />
+        <AccountSelector />
+        <Authorization />
+
         </div>
       </div>
     </div>
