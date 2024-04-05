@@ -6,7 +6,7 @@ public interface IJournalService
 {
     Task<JournalBalance> CalculateTodayBalance(string account);
 
-    Task<IEnumerable<JournalBalance>> CalculateHistoricalBalance(string account, DateOnly? since);
+    Task<IEnumerable<JournalBalance>> CalculateHistoricalBalance(string account, DateOnly? since, bool includeTodays = true);
 }
 
 public class JournalService : IJournalService
@@ -26,15 +26,19 @@ public class JournalService : IJournalService
                                              CalculateOrdersAssetTypeBalance(orders,"STOCK", orderDate));
     }
 
-    public async Task<IEnumerable<JournalBalance>> CalculateHistoricalBalance(string account, DateOnly? since = null)
+    public async Task<IEnumerable<JournalBalance>> CalculateHistoricalBalance(string account, DateOnly? since = null, bool includeTodays = true)
     {
         var ordersSince = since ?? GetThreeMonthsAgoDate();
         var orders = await _tradeStationService.GetHistoricOrders(account, ordersSince);
 
-        var orderByDate = orders.Where(y=> y.ClosedDateTime is not null).GroupBy(y=>DateOnly.FromDateTime(y.ClosedDateTime.Value));
-        var historicalJournal = orderByDate.Select(y=> new JournalBalance(y.Key, CalculateOrdersAssetTypeBalance(y, "STOCKOPTION", y.Key), 
+        var groupedByDate = orders.Where(y=> y.ClosedDateTime is not null).GroupBy(y=>DateOnly.FromDateTime(y.ClosedDateTime.Value));
+        var historicalJournal = groupedByDate.Select(y=> new JournalBalance(y.Key, CalculateOrdersAssetTypeBalance(y, "STOCKOPTION", y.Key), 
                                                                                  CalculateOrdersAssetTypeBalance(y,"STOCK", y.Key)));
-        return historicalJournal;
+        if(includeTodays == false)
+            return historicalJournal;
+        
+        var todaysResult = await CalculateTodayBalance(account);
+        return historicalJournal.Prepend(todaysResult);
     }
 
     private BalanceData CalculateOrdersAssetTypeBalance(IEnumerable<Order> orders, string assetType, DateOnly ordersDate)
@@ -49,9 +53,9 @@ public class JournalService : IJournalService
         var balance = ((soldOrdersTotal - boughtOrdersTotal) - commissions);
         
         return new BalanceData(
-                        balance:balance, 
-                        sellAmount: soldOrdersTotal, 
-                        buyAmount: boughtOrdersTotal,
+                        balance:Math.Round(balance, 2), 
+                        sellAmount: Math.Round(soldOrdersTotal,2), 
+                        buyAmount: Math.Round(boughtOrdersTotal,2),
                         commissions:commissions,
                         numberOfTrades: (filledOrders.Count() / 2));
     }

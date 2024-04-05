@@ -4,7 +4,7 @@ import useUserStore from '@/stores/user'
 import config from '@/config'
 import { onMounted } from 'vue';
 
-const store = useUserStore();
+const userStore = useUserStore();
 const router = useRouter();
 
 const clientId = config.TsClientId;
@@ -15,8 +15,10 @@ const redirectUrl = "http://localhost:8080/";
 onMounted(async ()=>{
   if(urlParams.has('code') ){
    const code = urlParams.get('code');
-   await store.setAccessToken(code as string, redirectUrl);
-   router.push({name:'journal'})
+   await userStore.setAccessToken(code as string, redirectUrl);
+   await userStore.loadAccounts(); 
+
+   router.push({name:'home'})
   }
 })
 
@@ -26,13 +28,14 @@ const login = ()=>{
 }
 
 const logOff = () =>{
-  store.removeAccessToken();
+  userStore.resetStore();
+  router.push({name:'home'})
 
 }
 </script>
 
 <template>
-  <button v-if="store.bearerToken === null" @click="login()" class="btn btn-outline-light me-2" type="button" href="">Log in TradeStation</button>
+  <button v-if="!userStore.isUserLoggedIn" @click="login()" class="btn btn-outline-light me-2" type="button" href="">Log in TradeStation</button>
   <button v-else @click="logOff()" class="btn btn-outline-light me-2" type="button" href="">Log off</button>
 </template>
 

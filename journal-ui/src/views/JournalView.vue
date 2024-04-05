@@ -3,7 +3,6 @@
 	import JournalCalendar from '../components/JournalCalendar.vue';
 	import {ref} from 'vue'
 	const isCalendarChecked =  ref(true);
-
 </script>
 
 <template>

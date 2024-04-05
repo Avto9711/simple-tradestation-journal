@@ -2,6 +2,13 @@ import config from "./config";
 import useUserStore from '@/stores/user'
 class ApiService
 {
+
+    public async getAccountHistoricalJournalBalance(account:string)
+    {
+        const response = await this.getRequest(`${config.apiUrl}api/Journal/Historical/${account}`);
+        return await response.json()
+    }
+
     public async getUserAccessToken(code:string, redirectUrl:string): Promise<Record<string, any>>{
         const response = await this.postRequest(`${config.apiUrl}api/Authentication/Token`, {code, redirectUrl});
         return await response.json()

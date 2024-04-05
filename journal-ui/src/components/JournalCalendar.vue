@@ -4,11 +4,45 @@ import dayGridPlugin from '@fullcalendar/daygrid'
 import interactionPlugin from '@fullcalendar/interaction'
 import type { CalendarOptions, EventApi, EventClickArg, EventInput } from '@fullcalendar/core/index.js';
 import {Modal} from 'bootstrap';
-
-import {reactive, onMounted, ref} from 'vue'
+import useJournalStore from '@/stores/journal';
+import {reactive, onMounted, ref, watch} from 'vue'
+import type { JournalBalance } from '@/models';
 
 let todayStr = new Date().toISOString().replace(/T.*$/, '')
 let myModal:any | null = null;
+
+let journalBalances =  ref<EventInput>([]);
+
+const journalStore = useJournalStore();
+
+watch(journalStore.$state,(value)=>{
+  const newJournalBalances = value.journalBalances;
+  if(newJournalBalances.length){
+    journalBalances.value = transformJournalBalancesToEventsObject(newJournalBalances);
+    console.log(newJournalBalances)
+  }else{
+    journalBalances.value = [];
+  }
+})
+
+const transformJournalBalancesToEventsObject = (journalBalances:JournalBalance[]):EventInput[] => {
+
+  return journalBalances.map(journalBalance => {
+    const textColor = journalBalance.overallBalance > 0 ? 'green': 'red'
+
+    const eventInput: EventInput = { 
+              title: journalBalance.overallBalance.toString(), 
+              start: journalBalance.balanceDate, 
+              classNames:['align-middle'],
+              display:'list',
+              backgroundColor:'white',
+              textColor:textColor,
+              borderColor:'white',
+              extendedProps:journalBalance
+            }
+            return eventInput;
+  }) as EventInput[]
+}
 
 onMounted(() => {
   myModal = new Modal(document.getElementById('exampleModal'),{backdrop:true})
@@ -28,24 +62,7 @@ const calendarOptions:CalendarOptions =  reactive({
           selectedJournalBalance.value = selectionInfo.event.extendedProps;
           myModal?.toggle()
         },
-        events:(info, successCallback, failureCallBack)=>{
-
-          const tradeBalance = {comments:"", balanceDate:'2024-03-01', optionsEndingBalance: {balance:100, numberOfTrades: 1}, stocksEndingBalance:{balance:100, numberOfTrades: 1}, overallBalance:200, overallNumberOfTrades:2 };
-          const textColor = tradeBalance.overallBalance > 0 ? 'green': 'red'
-          const events:EventInput[] = [
-            { 
-              title: tradeBalance.overallBalance.toString(), 
-              start: '2024-03-01', 
-              classNames:['align-middle'],
-              display:'list',
-              backgroundColor:'white',
-              textColor:textColor,
-              borderColor:'white',
-              extendedProps:tradeBalance
-            }
-          ]
-          successCallback(events);
-        }
+        events: journalBalances
         });
 </script>
 

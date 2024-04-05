@@ -20,10 +20,10 @@ public class JournalController(IJournalService journalService) : ControllerBase
     }
 
     [HttpGet("Historical/{account}")]
-    public async Task<IActionResult> GetHistoricalJournal([FromRoute] string account, [FromQuery] string since)
+    public async Task<IActionResult> GetHistoricalJournal([FromRoute] string account, [FromQuery] string since, [FromQuery] bool includeTodays = true)
     {
         var parsed = DateOnly.TryParse(since, out var sinceParsed);
-        var balance = await _journalService.CalculateHistoricalBalance(account, parsed ? sinceParsed: null);
+        var balance = await _journalService.CalculateHistoricalBalance(account, parsed ? sinceParsed: null, includeTodays);
 
         return Ok(balance);
     }

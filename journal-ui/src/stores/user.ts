@@ -1,14 +1,17 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import apiService from '@/apiService';
+import type { Account } from '@/models';
 
 export const useUserStore = defineStore('user',{
   state:()=>({
     userEmail:"",
     bearerToken:null,
-    accounts:[] as any,
-    selectAccount:"Select Account"
+    accounts:[] as Account[],
   }),
+  getters:{
+    isUserLoggedIn: (state)=> state.bearerToken != null
+  },
   persist:true,
   actions:{
     async setAccessToken(code:string, redirectUrl:string){
@@ -17,14 +20,11 @@ export const useUserStore = defineStore('user',{
     },
     async loadAccounts(){
       const accounts = await apiService.getUserAccounts();
-      this.accounts = accounts as any;
+      this.accounts = accounts as Account[];
     },
-    removeAccessToken(){
-      this.bearerToken = null;
-  },
-  setSelectedAccount(account:string){
-    this.selectAccount = account;
-  },
+    resetStore(){
+      this.$reset();
+    }
   }
 
 });
