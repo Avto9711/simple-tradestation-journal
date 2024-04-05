@@ -76,7 +76,8 @@ const calendarOptions:CalendarOptions =  reactive({
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
-        <table class="table">
+        <div class="row">
+          <table class="table">
           <thead>
             <tr>
               <th scope="col"></th>
@@ -86,32 +87,47 @@ const calendarOptions:CalendarOptions =  reactive({
           </thead>
           <tbody>
             <tr>
-              <th scope="row">Balance</th>
-              <td>${{selectedJournalBalance.optionsEndingBalance.balance}}</td>
-              <td>${{selectedJournalBalance.stocksEndingBalance.balance}}</td>
-            </tr>
-            <tr>
               <th scope="row">Num Trading</th>
               <td>{{selectedJournalBalance.optionsEndingBalance.numberOfTrades}}</td>
               <td>{{selectedJournalBalance.stocksEndingBalance.numberOfTrades}}</td>
             </tr>
             <tr>
+              <th scope="row">Balance</th>
+              <td>${{selectedJournalBalance.optionsEndingBalance.balance}}</td>
+              <td>${{selectedJournalBalance.stocksEndingBalance.balance}}</td>
+            </tr>
+
+            <tr>
               <th scope="row">Buy</th>
-              <td>${{selectedJournalBalance.optionsEndingBalance.numberOfTrades}}</td>
-              <td>${{selectedJournalBalance.stocksEndingBalance.numberOfTrades}}</td>
+              <td>${{selectedJournalBalance.optionsEndingBalance.buyAmount}}</td>
+              <td>${{selectedJournalBalance.stocksEndingBalance.buyAmount}}</td>
             </tr>
             <tr>
-              <th scope="row">So  ld</th>
-              <td>${{selectedJournalBalance.optionsEndingBalance.numberOfTrades}}</td>
-              <td>${{selectedJournalBalance.stocksEndingBalance.numberOfTrades}}</td>
+              <th scope="row">Sold</th>
+              <td>${{selectedJournalBalance.optionsEndingBalance.sellAmount}}</td>
+              <td>${{selectedJournalBalance.stocksEndingBalance.sellAmount}}</td>
+            </tr>
+            <tr>
+              <th scope="row">Commissions</th>
+              <td>${{selectedJournalBalance.optionsEndingBalance.commissions}}</td>
+              <td>${{selectedJournalBalance.stocksEndingBalance.commissions}}</td>
             </tr>
           </tbody>
         </table>
-        <textarea v-model="selectedJournalBalance.comments" cols="30" rows="10"></textarea>
+        </div>
+        <div class="row p-2">
+          <div class="row">
+            Comments:
+          </div>
+          <div class="row">
+            <textarea v-model="selectedJournalBalance.comments"></textarea>
+
+          </div>
+        </div>
+
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-        <button type="button" class="btn btn-primary">Save changes</button>
       </div>
     </div>
   </div>
