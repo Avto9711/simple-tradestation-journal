@@ -3,10 +3,11 @@ export interface JournalBalance {
     overallBalance:number;
     overallNumberOfTrades:number;
     optionsEndingBalance: BalanceData
-    stocksEndingBalance: BalanceData
+    stocksEndingBalance: BalanceData;
+    comments:string | null
    }
   
-interface BalanceData {
+export interface BalanceData {
     balance:number;
     buyAmount:number;
     sellAmount:number;
@@ -14,8 +15,8 @@ interface BalanceData {
     numberOfTrades:number;
    }
 
-   export interface Account
-   {
-    accountId:string
-    accountType:string
-   }
+export interface Account
+{
+accountId:string
+accountType:string
+}

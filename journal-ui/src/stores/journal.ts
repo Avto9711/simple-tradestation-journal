@@ -14,6 +14,9 @@ import type { JournalBalance } from "@/models";
       clearJournalBalance(){
         this.journalBalances = [];
       }
+    },
+    getters:{
+      journalTotal: (state)=> state.journalBalances.length
     }
  });
 

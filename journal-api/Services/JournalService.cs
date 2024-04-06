@@ -50,13 +50,11 @@ public class JournalService : IJournalService
         var boughtOrdersTotal = filledOrders.Where(x => x.Legs.Any(y=>y.BuyOrSell == "Buy")).Sum(x => x.FilledPrice) * (isOptions ? 100:1);
         var soldOrdersTotal = filledOrders.Where(x => x.Legs.Any(y=>y.BuyOrSell == "Sell")).Sum(x => x.FilledPrice) * (isOptions ? 100:1);
         var commissions = dateOrders.Sum(y=>y.CommissionFee);
-        var balance = ((soldOrdersTotal - boughtOrdersTotal) - commissions);
         
         return new BalanceData(
-                        balance:Math.Round(balance, 2), 
                         sellAmount: Math.Round(soldOrdersTotal,2), 
                         buyAmount: Math.Round(boughtOrdersTotal,2),
-                        commissions:commissions,
+                        commissions:Math.Round(commissions,2),
                         numberOfTrades: (filledOrders.Count() / 2));
     }
 

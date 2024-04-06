@@ -2,16 +2,15 @@
 import FullCalendar from '@fullcalendar/vue3'
 import dayGridPlugin from '@fullcalendar/daygrid'
 import interactionPlugin from '@fullcalendar/interaction'
-import type { CalendarOptions, EventApi, EventClickArg, EventInput } from '@fullcalendar/core/index.js';
-import {Modal} from 'bootstrap';
+import type { CalendarOptions, EventClickArg, EventInput } from '@fullcalendar/core/index.js';
 import useJournalStore from '@/stores/journal';
-import {reactive, onMounted, ref, watch} from 'vue'
+import {reactive, ref, watch} from 'vue'
 import type { JournalBalance } from '@/models';
-
-let todayStr = new Date().toISOString().replace(/T.*$/, '')
-let myModal:any | null = null;
-
+import JournalDetailModal, { type JournalDetailComponent } from '@/components/JournalDetailModal.vue'
 let journalBalances =  ref<EventInput>([]);
+
+
+const detailModalComponent = ref<JournalDetailComponent>();
 
 const journalStore = useJournalStore();
 
@@ -44,10 +43,8 @@ const transformJournalBalancesToEventsObject = (journalBalances:JournalBalance[]
   }) as EventInput[]
 }
 
-onMounted(() => {
-  myModal = new Modal(document.getElementById('exampleModal'),{backdrop:true})
-})
-let selectedJournalBalance = ref<Record<string, any>>({optionsEndingBalance:{},stocksEndingBalance:{}});
+
+let selectedJournalBalance = ref<JournalBalance | null>(null);
 
 const calendarOptions:CalendarOptions =  reactive({
         plugins: [ dayGridPlugin, interactionPlugin ],
@@ -59,79 +56,16 @@ const calendarOptions:CalendarOptions =  reactive({
         weekends:false,
         eventClick:(selectionInfo:EventClickArg)=>{
           console.log(selectionInfo)
-          selectedJournalBalance.value = selectionInfo.event.extendedProps;
-          myModal?.toggle()
+          selectedJournalBalance.value = selectionInfo.event.extendedProps as JournalBalance;
+          detailModalComponent?.value?.toggleModal()
         },
         events: journalBalances
         });
 </script>
 
 <template>
-  <!-- Modal -->
-<div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="exampleModalLabel">Trade data for {{ selectedJournalBalance.balanceDate }}</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body">
-        <div class="row">
-          <table class="table">
-          <thead>
-            <tr>
-              <th scope="col"></th>
-              <th scope="col">Option Trading</th>
-              <th scope="col">Stock Trading</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <th scope="row">Num Trading</th>
-              <td>{{selectedJournalBalance.optionsEndingBalance.numberOfTrades}}</td>
-              <td>{{selectedJournalBalance.stocksEndingBalance.numberOfTrades}}</td>
-            </tr>
-            <tr>
-              <th scope="row">Balance</th>
-              <td>${{selectedJournalBalance.optionsEndingBalance.balance}}</td>
-              <td>${{selectedJournalBalance.stocksEndingBalance.balance}}</td>
-            </tr>
-
-            <tr>
-              <th scope="row">Buy</th>
-              <td>${{selectedJournalBalance.optionsEndingBalance.buyAmount}}</td>
-              <td>${{selectedJournalBalance.stocksEndingBalance.buyAmount}}</td>
-            </tr>
-            <tr>
-              <th scope="row">Sold</th>
-              <td>${{selectedJournalBalance.optionsEndingBalance.sellAmount}}</td>
-              <td>${{selectedJournalBalance.stocksEndingBalance.sellAmount}}</td>
-            </tr>
-            <tr>
-              <th scope="row">Commissions</th>
-              <td>${{selectedJournalBalance.optionsEndingBalance.commissions}}</td>
-              <td>${{selectedJournalBalance.stocksEndingBalance.commissions}}</td>
-            </tr>
-          </tbody>
-        </table>
-        </div>
-        <div class="row p-2">
-          <div class="row">
-            Comments:
-          </div>
-          <div class="row">
-            <textarea v-model="selectedJournalBalance.comments"></textarea>
-
-          </div>
-        </div>
-
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-      </div>
-    </div>
-  </div>
-</div>
+  
+<JournalDetailModal v-if="selectedJournalBalance" :journalBalance="selectedJournalBalance" ref="detailModalComponent"  />
   <FullCalendar :options="calendarOptions" >
     <template v-slot:eventContent='arg'>
       <p class="fs-3 fw-bold">${{ arg.event.extendedProps.overallBalance }}</p>
