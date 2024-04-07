@@ -7,6 +7,7 @@ import type { JournalBalance } from "@/models";
   state:()=> ({
     journalBalances:[] as JournalBalance[],
     }),
+    persist:true,
     actions:{
       async loadAccountJournal(account:string){
        this.journalBalances = await apiService.getAccountHistoricalJournalBalance(account);

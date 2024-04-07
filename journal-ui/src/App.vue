@@ -14,6 +14,7 @@ const userStore = useUserStore();
 
 watch(accountSelected, async (value)=>{
   if(value){
+    userStore.setAccountSelected(value);
     await journalStore.loadAccountJournal(value);
   }else{
     journalStore.clearJournalBalance();

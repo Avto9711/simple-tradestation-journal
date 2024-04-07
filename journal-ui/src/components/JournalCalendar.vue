@@ -55,7 +55,6 @@ const calendarOptions:CalendarOptions =  reactive({
         },
         weekends:false,
         eventClick:(selectionInfo:EventClickArg)=>{
-          console.log(selectionInfo)
           selectedJournalBalance.value = selectionInfo.event.extendedProps as JournalBalance;
           detailModalComponent?.value?.toggleModal()
         },

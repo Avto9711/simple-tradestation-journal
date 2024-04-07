@@ -8,6 +8,7 @@ export const useUserStore = defineStore('user',{
     userEmail:"",
     bearerToken:null,
     accounts:[] as Account[],
+    accountSelected:null as string | null
   }),
   getters:{
     isUserLoggedIn: (state)=> state.bearerToken != null
@@ -21,6 +22,9 @@ export const useUserStore = defineStore('user',{
     async loadAccounts(){
       const accounts = await apiService.getUserAccounts();
       this.accounts = accounts as Account[];
+    },
+    setAccountSelected(account:string | null){
+      this.accountSelected = account;
     },
     resetStore(){
       this.$reset();
