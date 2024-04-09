@@ -8,6 +8,6 @@ const selectAccount = defineModel()
 <template>
     <select v-model="selectAccount" class="custom-select">
           <option :value="null" :selected="selectAccount === null">Select Account</option>
-          <option :value="account.accountId" :key="account.accountId" v-for="account in userStore.accounts" :selected="account.accountId === userStore.selectAccount" value="1">{{ account.accountId }}</option>
+          <option :value="account.accountId" :key="account.accountId" v-for="account in userStore.accounts" :selected="account.accountId === selectAccount">{{ account.accountId }}</option>
     </select>
 </template>

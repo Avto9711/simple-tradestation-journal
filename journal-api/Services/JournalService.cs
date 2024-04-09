@@ -1,4 +1,5 @@
 using journal.api.Domain;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
 
 namespace journal.api.service;
 
@@ -41,6 +42,20 @@ public class JournalService : IJournalService
         return historicalJournal.Prepend(todaysResult);
     }
 
+    public async Task<JournalBalanceMonthBalance> CalculateHistoricalBalanceWithMothsBalance(string account, DateOnly? since = null, bool includeTodays = true)
+    {
+        var lastThreeMonthsOrders = await CalculateHistoricalBalance(account, since,includeTodays);
+
+        var lastMonthsBalance = lastThreeMonthsOrders
+        .GroupBy(x=>x.BalanceDate.Month)
+        .Select(groupedOrders => new MonthlyBalance(groupedOrders.Key.ToString("MMM"), 
+                                                    groupedOrders.Sum(x=>x.OverallBalance)));
+
+        return new JournalBalanceMonthBalance(monthlyBalances:lastMonthsBalance, balances:lastThreeMonthsOrders);
+    }
+
+    // Refactor this method, add Trades Obejct to Balance Data. Use Legs."Symbol" and Legs.OpenOrClose to match trades
+    // Different orders will have same Symbol. Perhaps I can use the ExecQuantity to calculate profit for different Exits
     private BalanceData CalculateOrdersAssetTypeBalance(IEnumerable<Order> orders, string assetType, DateOnly ordersDate)
     {
         var isOptions = assetType == "STOCKOPTION";

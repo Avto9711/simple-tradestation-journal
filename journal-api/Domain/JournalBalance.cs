@@ -11,6 +11,6 @@ public class JournalBalance(DateOnly balanceDay, BalanceData optionsEndingBalanc
     public double OverallBalance => this.OptionsEndingBalance.Balance + this.StocksEndingBalance.Balance;
 
     public double OverallNumberOfTrades => this.OptionsEndingBalance.NumberOfTrades + this.StocksEndingBalance.NumberOfTrades;
- 
+
     public string Comments { get; init; } = comments;
 }

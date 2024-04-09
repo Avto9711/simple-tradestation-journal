@@ -1,6 +1,4 @@
-using journal.api.Domain;
 using journal.api.service;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace journal.api.Controllers;
