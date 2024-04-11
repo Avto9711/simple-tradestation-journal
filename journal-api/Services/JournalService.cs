@@ -1,4 +1,5 @@
 using journal.api.Domain;
+using Microsoft.AspNetCore.Components.Web;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
 
 namespace journal.api.service;
@@ -62,15 +63,42 @@ public class JournalService : IJournalService
         var dateOrders = orders.Where(o => o.Legs.Any(l => l.AssetType == assetType) && DateOnly.FromDateTime(o.ClosedDateTime.Value) == ordersDate);
         var filledOrders = dateOrders.Where(y=> y.Status == "FLL");
 
-        var boughtOrdersTotal = filledOrders.Where(x => x.Legs.Any(y=>y.BuyOrSell == "Buy")).Sum(x => x.FilledPrice) * (isOptions ? 100:1);
-        var soldOrdersTotal = filledOrders.Where(x => x.Legs.Any(y=>y.BuyOrSell == "Sell")).Sum(x => x.FilledPrice) * (isOptions ? 100:1);
-        var commissions = dateOrders.Sum(y=>y.CommissionFee);
-        
-        return new BalanceData(
+        var trades = dateOrders
+        .SelectMany(order => order.Legs, (o,l)=> new {order=o, leg=l})
+        .GroupBy(x=> new { x.leg.Symbol })
+        .Select(ol =>
+            new Trade 
+                { 
+                    OpeningPositions = ol.Where(y=>y.leg.OpenOrClose == "Open").Select(openOrderLegs => GetTradeOperationFromLegAndOrder(openOrderLegs.leg, openOrderLegs.order)), 
+                    ClosePositions = ol.Where(y=>y.leg.OpenOrClose == "Close").Select(openOrderLegs => GetTradeOperationFromLegAndOrder(openOrderLegs.leg, openOrderLegs.order)),
+                    Symbol = ol.Key.Symbol,
+                    AssetType = assetType
+                }
+        );
+        var multiplier = (isOptions ? 100:1);
+        var boughtOrdersTotal = trades.Sum(y=>y.OpeningPositionTotalAmount) * multiplier;
+        var soldOrdersTotal = trades.Sum(y=>y.ClosingPositionTotalAmount) * multiplier;
+        var commissions = trades.Sum(y=>y.TradeEndingCommission);
+        var balanceData = new BalanceData(
                         sellAmount: Math.Round(soldOrdersTotal,2), 
                         buyAmount: Math.Round(boughtOrdersTotal,2),
                         commissions:Math.Round(commissions,2),
-                        numberOfTrades: (filledOrders.Count() / 2));
+                        numberOfTrades: trades.Count());
+        
+        balanceData.Trades = trades;
+
+        return balanceData;
+    }
+
+    private static TradeOperation GetTradeOperationFromLegAndOrder(Leg orderLeg, Order order){
+        return new TradeOperation
+        {
+            Quantity = orderLeg.ExecQuantity,
+            Commission = order.CommissionFee,
+            ClosedDateTime = order.ClosedDateTime,
+            ExecutionPrice = orderLeg.ExecutionPrice,
+            OpenedDateTime = order.OpenedDateTime
+        };
     }
 
     private DateOnly GetThreeMonthsAgoDate()=> DateOnly.FromDateTime(DateTime.Now.AddMonths(-3).AddDays(2));

@@ -8,8 +8,8 @@ public class Leg
     public double Ask { get; set; }
     public string BaseSymbol { get; set; }
     public double Bid { get; set; }
-    public double ExecPrice { get; set; }
-    public double ExecQuantity { get; set; }
+    public double ExecutionPrice { get; set; }
+    public int ExecQuantity { get; set; }
     public string ExpireDate { get; set; }
     public double Leaves { get; set; }
     public int LegNumber { get; set; }
