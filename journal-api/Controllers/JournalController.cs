@@ -25,4 +25,12 @@ public class JournalController(IJournalService journalService) : ControllerBase
 
         return Ok(balance);
     }
+
+    [HttpGet("GeneralBalance/{account}")]
+    public async Task<IActionResult> GetMonthlyHistoricalJournal([FromRoute] string account)
+    {
+        var balance = await _journalService.GetJournalGeneralBalance(account);
+
+        return Ok(balance);
+    }
 }

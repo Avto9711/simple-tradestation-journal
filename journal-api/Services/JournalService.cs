@@ -1,4 +1,6 @@
+using System.Globalization;
 using journal.api.Domain;
+using journal.api.Dto;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
 
@@ -9,6 +11,9 @@ public interface IJournalService
     Task<JournalBalance> CalculateTodayBalance(string account);
 
     Task<IEnumerable<JournalBalance>> CalculateHistoricalBalance(string account, DateOnly? since, bool includeTodays = true);
+
+    Task<GeneralBalanceResponse> GetJournalGeneralBalance(string account);
+
 }
 
 public class JournalService : IJournalService
@@ -35,7 +40,7 @@ public class JournalService : IJournalService
 
         var groupedByDate = orders.Where(y=> y.ClosedDateTime is not null).GroupBy(y=>DateOnly.FromDateTime(y.ClosedDateTime.Value));
         var historicalJournal = groupedByDate.Select(y=> new JournalBalance(y.Key, CalculateOrdersAssetTypeBalance(y, "STOCKOPTION", y.Key), 
-                                                                                 CalculateOrdersAssetTypeBalance(y,"STOCK", y.Key)));
+                                                                                CalculateOrdersAssetTypeBalance(y,"STOCK", y.Key)));
         if(includeTodays == false)
             return historicalJournal;
         
@@ -55,8 +60,6 @@ public class JournalService : IJournalService
         return new JournalBalanceMonthBalance(monthlyBalances:lastMonthsBalance, balances:lastThreeMonthsOrders);
     }
 
-    // Refactor this method, add Trades Obejct to Balance Data. Use Legs."Symbol" and Legs.OpenOrClose to match trades
-    // Different orders will have same Symbol. Perhaps I can use the ExecQuantity to calculate profit for different Exits
     private BalanceData CalculateOrdersAssetTypeBalance(IEnumerable<Order> orders, string assetType, DateOnly ordersDate)
     {
         var isOptions = assetType == "STOCKOPTION";
@@ -69,8 +72,8 @@ public class JournalService : IJournalService
         .Select(ol =>
             new Trade 
                 { 
-                    OpeningPositions = ol.Where(y=>y.leg.OpenOrClose == "Open").Select(openOrderLegs => GetTradeOperationFromLegAndOrder(openOrderLegs.leg, openOrderLegs.order)), 
-                    ClosePositions = ol.Where(y=>y.leg.OpenOrClose == "Close").Select(openOrderLegs => GetTradeOperationFromLegAndOrder(openOrderLegs.leg, openOrderLegs.order)),
+                    OpeningPositions = ol.Where(y=>y.leg.OpenOrClose == "Open").OrderByDescending(m=>m.order.OpenedDateTime).Select(openOrderLegs => GetTradeOperationFromLegAndOrder(openOrderLegs.leg, openOrderLegs.order)), 
+                    ClosePositions = ol.Where(y=>y.leg.OpenOrClose == "Close").OrderByDescending(m=>m.order.OpenedDateTime).Select(openOrderLegs => GetTradeOperationFromLegAndOrder(openOrderLegs.leg, openOrderLegs.order)),
                     Symbol = ol.Key.Symbol,
                     AssetType = assetType
                 }
@@ -88,6 +91,21 @@ public class JournalService : IJournalService
         balanceData.Trades = trades;
 
         return balanceData;
+    }
+
+    public async Task<GeneralBalanceResponse> GetJournalGeneralBalance(string account)
+    {
+        var balances = await CalculateHistoricalBalance(account);
+        var monthlyBalances = balances
+        .GroupBy(y=>y.BalanceDate.Month)
+        .Select(y=> new MonthlyBalance (
+                CultureInfo.CurrentCulture.DateTimeFormat.GetMonthName(y.Key),
+                y.Sum(y=>y.OverallBalance)));
+        return new GeneralBalanceResponse 
+        {
+            MonthlyBalance = monthlyBalances,
+            DailyBalance = balances
+        };
     }
 
     private static TradeOperation GetTradeOperationFromLegAndOrder(Leg orderLeg, Order order){

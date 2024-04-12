@@ -1,8 +1,8 @@
 namespace journal.api.Domain;
 
-public class MonthlyBalance(string monthName, double monthBBalance )
+public class MonthlyBalance(string monthName, double monthBalance )
 {
     public string MonthName {get; init; } = monthName;
 
-    public double MonthBalance { get; init; } =  monthBBalance;
+    public double MonthBalance { get; init; } =  monthBalance;
 }
