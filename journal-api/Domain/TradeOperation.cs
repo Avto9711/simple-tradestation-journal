@@ -11,4 +11,6 @@ public class TradeOperation
     public DateTime? OpenedDateTime{get;set;}
 
     public double Commission { get; set; }
+
+    public string OpenOrClose { get; set; }
 }

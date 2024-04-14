@@ -3,6 +3,12 @@ import useUserStore from '@/stores/user'
 class ApiService
 {
 
+    public async getAccountGeneralBalance(account:string)
+    {
+        const response = await this.getRequest(`${config.apiUrl}api/Journal/GeneralBalance/${account}`);
+        return await response.json()
+    }
+
     public async getAccountHistoricalJournalBalance(account:string)
     {
         const response = await this.getRequest(`${config.apiUrl}api/Journal/Historical/${account}`);

@@ -7,9 +7,9 @@ import useJournalStore from './stores/journal'
 
 import useUserStore from './stores/user'
 import { ref, watch } from 'vue';
-const accountSelected = ref(null);
 const journalStore = useJournalStore();
 const userStore = useUserStore();
+const accountSelected = ref(userStore.accountSelected);
 
 
 watch(accountSelected, async (value)=>{

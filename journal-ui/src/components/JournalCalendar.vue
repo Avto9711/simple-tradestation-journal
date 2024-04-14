@@ -5,16 +5,36 @@ import interactionPlugin from '@fullcalendar/interaction'
 import type { CalendarOptions, EventClickArg, EventInput } from '@fullcalendar/core/index.js';
 import useJournalStore from '@/stores/journal';
 import {reactive, ref, watch} from 'vue'
-import type { JournalBalance } from '@/models';
+import type { JournalBalance, JournalBalanceWithMergePositions } from '@/models';
 import JournalDetailModal, { type JournalDetailComponent } from '@/components/JournalDetailModal.vue'
-let journalBalances =  ref<EventInput>([]);
 
+const transformJournalBalancesToEventsObject = (journalBalances:JournalBalance[]):EventInput[] => {
 
-const detailModalComponent = ref<JournalDetailComponent>();
+return journalBalances.map(journalBalance => {
+  const textColor = journalBalance.overallBalance > 0 ? 'green': 'red'
+
+  const eventInput: EventInput = { 
+            title: journalBalance.overallBalance.toString(), 
+            start: journalBalance.balanceDate, 
+            classNames:['align-middle'],
+            display:'list',
+            backgroundColor:'white',
+            textColor:textColor,
+            borderColor:'white',
+            extendedProps:journalBalance
+          }
+          return eventInput;
+}) as EventInput[]
+};
 
 const journalStore = useJournalStore();
 
+let journalBalances =  ref<EventInput>(transformJournalBalancesToEventsObject(journalStore.journalBalancesMergedTrades));
+const detailModalComponent = ref<JournalDetailComponent>();
+
 watch(journalStore.$state,(value)=>{
+debugger
+  
   const newJournalBalances = value.journalBalances;
   if(newJournalBalances.length){
     journalBalances.value = transformJournalBalancesToEventsObject(newJournalBalances);
@@ -24,27 +44,10 @@ watch(journalStore.$state,(value)=>{
   }
 })
 
-const transformJournalBalancesToEventsObject = (journalBalances:JournalBalance[]):EventInput[] => {
-
-  return journalBalances.map(journalBalance => {
-    const textColor = journalBalance.overallBalance > 0 ? 'green': 'red'
-
-    const eventInput: EventInput = { 
-              title: journalBalance.overallBalance.toString(), 
-              start: journalBalance.balanceDate, 
-              classNames:['align-middle'],
-              display:'list',
-              backgroundColor:'white',
-              textColor:textColor,
-              borderColor:'white',
-              extendedProps:journalBalance
-            }
-            return eventInput;
-  }) as EventInput[]
-}
 
 
-let selectedJournalBalance = ref<JournalBalance | null>(null);
+
+let selectedJournalBalance = ref<JournalBalanceWithMergePositions | null>(null);
 
 const calendarOptions:CalendarOptions =  reactive({
         plugins: [ dayGridPlugin, interactionPlugin ],
@@ -55,7 +58,7 @@ const calendarOptions:CalendarOptions =  reactive({
         },
         weekends:false,
         eventClick:(selectionInfo:EventClickArg)=>{
-          selectedJournalBalance.value = selectionInfo.event.extendedProps as JournalBalance;
+          selectedJournalBalance.value = selectionInfo.event.extendedProps as JournalBalanceWithMergePositions;
           detailModalComponent?.value?.toggleModal()
         },
         events: journalBalances

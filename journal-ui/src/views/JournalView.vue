@@ -2,7 +2,10 @@
 	import JournalTable from '../components/JournalTable.vue';
 	import JournalCalendar from '../components/JournalCalendar.vue';
 	import {ref} from 'vue'
+import useJournalStore from '@/stores/journal';
 	const isCalendarChecked =  ref(true);
+
+	const journalStore = useJournalStore();
 </script>
 
 <template>
@@ -15,11 +18,11 @@
 			</div>
 		</div>
 		<div class="row">
-			<div class="col">
-				<div class="card border-danger bg-light mb-3" style="max-width: 18rem;">
-				<div class="card-header h5">July</div>
+			<div class="col" v-for="monthBalance in journalStore.monthlyBalance" >
+				<div :class="{ 'border-danger': monthBalance.monthBalance < 0,' border-success': monthBalance.monthBalance > 0 }" class="card  bg-light mb-3" style="max-width: 18rem;">
+				<div class="card-header h5">{{monthBalance.monthName}}</div>
 					<div class="card-body">
-						<h1 class="display-4">$45</h1>
+						${{ monthBalance.monthBalance }}	
 					</div>
 				</div>	
 			</div>

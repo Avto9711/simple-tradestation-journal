@@ -115,7 +115,8 @@ public class JournalService : IJournalService
             Commission = order.CommissionFee,
             ClosedDateTime = order.ClosedDateTime,
             ExecutionPrice = orderLeg.ExecutionPrice,
-            OpenedDateTime = order.OpenedDateTime
+            OpenedDateTime = order.OpenedDateTime,
+            OpenOrClose =  orderLeg.OpenOrClose,
         };
     }
 
